@@ -18,11 +18,15 @@ include_directories(src)
 
 add_executable(Main
         src/main.cpp
+        src/FileNode.cpp
+        src/FileNode.h
 )
 
 # These tests can use the Catch2-provided main
 add_executable(Tests
         tests/test_nodes.cpp
+        src/FileNode.cpp
+        src/FileNode.h
 )
 
 target_link_libraries(Tests PRIVATE Catch2::Catch2WithMain) #link catch to test.cpp file
