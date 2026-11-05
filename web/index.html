@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TREE(3) File System Explorer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <h1>TREE(3) FILE EXPLORER</h1>
+    <p>By Muhammad Abdullah Abid, Peter Batarseh, Nadeem Taysun</p>
+  </header>
+
+  <main>
+    <section class="selection-container">
+      <button id="btn-bplus" class="tree-btn active" onclick="selectImplementation('B+ Tree')">
+        B+ Tree Implementation
+      </button>
+      <button id="btn-splay" class="tree-btn" onclick="selectImplementation('Splay Tree')">
+        Splay Tree Implementation
+      </button>
+    </section>
+
+    <section class="explorer-frame">
+      <div class="metrics-panel">
+        <p><strong>CURRENT IMPLEMENTATION:</strong> <span id="current-impl">B+ Tree</span></p>
+        <p><strong>CURRENT DIRECTORY:</strong> <span id="current-dir">/root</span></p>
+        <p><strong>SUBDIRECTORY COUNT:</strong> <span id="subfolder-count">0</span></p>
+        <p><strong>FILE COUNT:</strong> <span id="file-count">0</span></p>
+        <p><strong>TOTAL NODES ACCESSED:</strong> <span id="node-access-count">0</span></p>
+      </div>
+
+      <div class="file-display" id="file-display">
+        <div class="folder-icon">
+          <span>"FILE NAME"</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
