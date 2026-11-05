@@ -14,6 +14,15 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+# httplib
+FetchContent_Declare(
+  httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG        v0.64.0
+  GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(httplib)
+
 include_directories(src)
 
 add_executable(Main
@@ -22,12 +31,14 @@ add_executable(Main
         src/FileNode.h
 )
 
-# Writes web/data/bplus.json and web/data/splay.json for the website
+# Web frontend thing
 add_executable(ExportWeb
         src/export_main.cpp
+        src/WebServer.cpp
         src/FileNode.cpp
         src/JsonExport.cpp
 )
+target_link_libraries(ExportWeb PRIVATE httplib::httplib)
 
 # These tests can use the Catch2-provided main
 add_executable(Tests
