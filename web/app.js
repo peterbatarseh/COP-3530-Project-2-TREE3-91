@@ -20,7 +20,10 @@ const d3 = window.d3;
 
 const DATA_FILES = {
   'B+ Tree': '/backend/bplus',
-  'Splay Tree': '/backend/splay'
+  'B+ Tree Accesses': '/backend/bplus_accesses', // access a specific node by its path
+
+  'Splay Tree': '/backend/splay',
+  'Splay Tree Accesses': '/backend/splay_accesses' // access a specific node by its name
 };
 
 // Real forests the camera can dive into
@@ -926,8 +929,38 @@ function goBack() {
   if (state.path.length > 1) navigateTo(state.path.length - 2);
 }
 
-function searchFile(file, d) {
+async function searchFile(file, d) {
+  const implementation = state.implementation;
+  const folder = currentFolder();
+  let url;
+
+  // Worst language ever?
+  if (implementation === "B+ Tree") {
+    let path = "";
+
+    // exclude root
+    for (const directory of state.path.slice(1)) {
+      path += directory.name + '/';
+    }
+
+    url = "/backend/bplus_accesses?path=" + encodeURIComponent(path + file.name);
+  }
+  else {
+    url = "/backend/splay_accesses?name=" + encodeURIComponent(file.name);
+  }
+
+  try {
+    const response = await fetch(url);
+    const accessCount = await response.json();
+    file.accesses = accessCount;
+  }
+  catch (error) {
+    console.error(error);
+    return;
+  }
+
   const from = state.totalNodesAccessed;
+
   state.totalNodesAccessed += file.accesses;
   animateCounter(from, state.totalNodesAccessed);
   $('last-access').textContent = `Found ${file.name} · ${file.accesses} nodes`;

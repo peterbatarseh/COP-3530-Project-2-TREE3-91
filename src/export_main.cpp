@@ -11,32 +11,33 @@ It's fine!
 #include "JsonExport.h"
 #include "WebServer.h"
 
-static FileNode* folder(FileNode* parent, const std::string& name) {
-    auto* n = new FileNode(name, nullptr, true);
-    if (parent) parent->addChild(n);
+static FileNode *folder(FileNode *parent, const std::string &name) {
+    auto *n = new FileNode(name, nullptr, true);
+    if (parent)
+        parent->addChild(n);
     return n;
 }
 
-static void file(FileNode* parent, const std::string& name) {
+static void file(FileNode *parent, const std::string &name) {
     parent->addChild(new FileNode(name, nullptr, false));
 }
 
-static FileNode* buildSample() {
-    FileNode* root = folder(nullptr, "root");
+static FileNode *buildSample() {
+    FileNode *root = folder(nullptr, "root");
 
-    FileNode* docs = folder(root, "Documents");
+    FileNode *docs = folder(root, "Documents");
     file(docs, "resume.pdf");
     file(docs, "notes.txt");
-    FileNode* school = folder(docs, "School");
+    FileNode *school = folder(docs, "School");
     file(school, "COP3530_syllabus.pdf");
     file(school, "project2_report.docx");
 
-    FileNode* pics = folder(root, "Pictures");
+    FileNode *pics = folder(root, "Pictures");
     file(pics, "beach.png");
     file(pics, "family.jpg");
     folder(pics, "Screenshots");
 
-    FileNode* code = folder(root, "Code");
+    FileNode *code = folder(root, "Code");
     file(code, "main.cpp");
     file(code, "FileNode.h");
     file(code, "FileNode.cpp");
@@ -45,11 +46,13 @@ static FileNode* buildSample() {
     return root;
 }
 
-int main(int argc, char* argv[]) {
-    std::string outDir = argc > 1 ? argv[1] : "../web/data";
+int main() {
 
     // we don't need a json file middleman anymore since it sends it through http
-    FileNode* root = buildSample();
+    FileNode *root = buildSample();
+    int result = runWebServer(root, root);
 
-    return runWebServer(root, root);
+    // clean up
+    delete root;
+    return result;
 }
