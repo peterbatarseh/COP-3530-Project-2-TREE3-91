@@ -21,7 +21,7 @@ FileNode::FileNode(const std::string &name, FileNode *parent, bool isFolder) {
 }
 
 FileNode::~FileNode() {
-    for (auto* child : this->children) {
+    for (auto *child : this->children) {
         delete child;
     }
     this->children.clear();
@@ -34,7 +34,7 @@ bool FileNode::addChild(FileNode *child) {
         throw std::runtime_error("Cannot add child to a non-folder node");
     }
 
-    for (const auto& n : this->children) {
+    for (const auto &n : this->children) {
         if (n->getName() == child->getName()) {
             return false;
         }
@@ -61,7 +61,7 @@ void FileNode::setParent(FileNode *parent) {
 
 void FileNode::updateHeight() {
     int maxHeight = 0;
-    for (const auto& n : this->children) {
+    for (const auto &n : this->children) {
         maxHeight = std::max(maxHeight, n->height);
     }
     this->height = 1 + maxHeight;
@@ -89,12 +89,16 @@ bool FileNode::isFolder() const {
     return this->folder;
 }
 
+const std::vector<FileNode *> &FileNode::getChildren() const {
+    return this->children;
+}
+
 void FileNode::print() const {
     std::cout << this->name << " (height:" << this->height << ")" << std::endl;
 
     if (this->folder) {
         std::cout << "Children:" << std::endl;
-        for (const auto& n : this->children) {
+        for (const auto &n : this->children) {
             n->print();
         }
     }
