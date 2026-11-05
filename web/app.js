@@ -1,7 +1,7 @@
-// Data comes from the C++ ExportWeb program, which writes these files.
+// Local server receives node data and renders it
 const DATA_FILES = {
-  'B+ Tree': 'data/bplus.json',
-  'Splay Tree': 'data/splay.json'
+  'B+ Tree': '/backend/bplus',
+  'Splay Tree': '/backend/splay'
 };
 
 let state = {
@@ -21,6 +21,7 @@ async function loadImplementation(implName) {
     state.implementation = implName;
     state.root = data.root;
     state.path = [data.root];
+    // TODO sending the entire tree is inefficient; probably make an update state just for node acceses?
     state.totalNodesAccessed = data.root.accesses;
     updateUI();
   } catch (err) {
