@@ -32,5 +32,6 @@ public:
     void updateHeight();
 
     bool isFolder() const;
+    const std::vector<FileNode *> &getChildren() const;
     void print() const;
 };

@@ -22,6 +22,13 @@ add_executable(Main
         src/FileNode.h
 )
 
+# Writes web/data/bplus.json and web/data/splay.json for the website
+add_executable(ExportWeb
+        src/export_main.cpp
+        src/FileNode.cpp
+        src/JsonExport.cpp
+)
+
 # These tests can use the Catch2-provided main
 add_executable(Tests
         tests/test_nodes.cpp

@@ -89,6 +89,10 @@ bool FileNode::isFolder() const {
     return this->folder;
 }
 
+const std::vector<FileNode *> &FileNode::getChildren() const {
+    return this->children;
+}
+
 void FileNode::print() const {
     std::cout << this->name << " (height:" << this->height << ")" << std::endl;
 
