@@ -23,8 +23,9 @@ _deps/
 *.out
 *.app
 
-# JetBrains IDEs (CLion)
+# IDE Stuff
 .idea/
+.vscode/
 cmake-build-debug/
 cmake-build-release/
 
