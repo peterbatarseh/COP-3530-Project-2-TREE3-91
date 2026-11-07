@@ -4,25 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TREE(3) File System Explorer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@400;700;900&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="mode-bplus">
 
-  <!-- 3D scenes (Earth + real tree) are drawn here by app.js -->
+  <!-- Draws Earth and Tree -->
   <canvas id="gl"></canvas>
   <div id="vignette"></div>
   <div id="flash"></div>
 
-  <!-- ========== SCENE 1: HOME ========== -->
+  <!-- Home Page -->
   <section id="home" class="screen visible">
     <header class="title-block">
-      <p class="kicker">COP 3530 &middot; Project 2 &middot; Team #91</p>
+      <p class="kicker">COP 3530 - Project 2 - Team #91</p>
       <h1 class="title">TREE<span class="title-paren">(3)</span></h1>
-      <p class="subtitle">File&nbsp;System&nbsp;Explorer</p>
-      <p class="authors">Muhammad Abdullah Abid &nbsp;/&nbsp; Peter Batarseh &nbsp;/&nbsp; Nadeem Taysun</p>
+      <p class="subtitle">File System Explorer</p>
+      <p class="authors">Muhammad Abdullah Abid / Peter Batarseh / Nadeem Taysun</p>
     </header>
 
     <div class="choices">
@@ -37,7 +35,7 @@
         </svg>
         <span class="choice-label">B+ Tree</span>
         <span class="choice-desc">Folders in the branches. Files live in linked leaves.</span>
-        <span class="choice-go">Enter &rarr;</span>
+        <span class="choice-go">Enter ;</span>
       </button>
 
       <button id="btn-splay" class="choice choice-splay" onclick="selectImplementation('Splay Tree')">
@@ -52,24 +50,24 @@
         </svg>
         <span class="choice-label">Splay Tree</span>
         <span class="choice-desc">A tree of splay trees. What you open rises to the top.</span>
-        <span class="choice-go">Enter &rarr;</span>
+        <span class="choice-go">Enter ;</span>
       </button>
     </div>
 
     <p class="hint">Click an implementation to begin</p>
   </section>
 
-  <!-- ========== SCENE 2: CINEMATIC (zoom into Earth, real tree grows) ========== -->
+  <!-- Intro animation -->
   <section id="cinematic" class="screen">
     <div class="hud">
       <p id="hud-line-1" class="hud-line"></p>
       <p id="hud-line-2" class="hud-line hud-big"></p>
       <p id="hud-line-3" class="hud-line"></p>
     </div>
-    <button id="btn-skip" class="ghost-btn">Skip intro &rarr;</button>
+    <button id="btn-skip" class="ghost-btn">Skip intro ;</button>
   </section>
 
-  <!-- ========== SCENE 3: DATA STRUCTURE EXPLORER ========== -->
+  <!-- File exploerer -->
   <section id="explorer" class="screen">
     <header class="topbar">
       <button class="brand" onclick="goHome()" title="Back to the globe">TREE<span>(3)</span></button>
@@ -104,11 +102,11 @@
       </div>
       <div class="metric">
         <span class="metric-label">Last access</span>
-        <span id="last-access" class="metric-value metric-small">&mdash;</span>
+        <span id="last-access" class="metric-value metric-small">-</span>
       </div>
 
       <div class="nav-bar">
-        <button id="btn-back" class="nav-btn" onclick="goBack()" disabled>&larr; Back</button>
+        <button id="btn-back" class="nav-btn" onclick="goBack()" disabled> Back</button>
         <button class="nav-btn" onclick="resetCounter()">Reset counter</button>
       </div>
 
@@ -117,7 +115,7 @@
         <li><span class="lg lg-file"></span>File (click to search)</li>
         <li><span class="lg lg-path"></span>Path from root</li>
       </ul>
-      <p class="panel-tip">Scroll to zoom &middot; drag to pan</p>
+      <p class="panel-tip">Scroll to zoom - drag to pan</p>
     </aside>
 
     <div class="file-display" id="file-display">
