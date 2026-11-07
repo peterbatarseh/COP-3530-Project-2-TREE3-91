@@ -9,7 +9,7 @@ include(FetchContent)
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.4.0 # Or a later version
+  GIT_TAG        v3.4.0
 )
 
 FetchContent_MakeAvailable(Catch2)
@@ -24,7 +24,6 @@ add_executable(Main
         src/BPlusTree.h
 )
 
-# These tests can use the Catch2-provided main
 add_executable(Tests
         tests/test_nodes.cpp
         tests/test_bplus_tree.cpp
@@ -34,10 +33,17 @@ add_executable(Tests
         src/BPlusTree.h
 )
 
-target_link_libraries(Tests PRIVATE Catch2::Catch2WithMain) #link catch to test.cpp file
-# the name here must match that of your testing executable (the one that has test.cpp)
+target_link_libraries(Tests PRIVATE Catch2::Catch2WithMain) 
 
-# comment everything below out if you are using CLion
 include(CTest)
 include(Catch)
-catch_discover_tests(Tests) # must be named the same as your test executable
+catch_discover_tests(Tests) 
+
+add_executable(SplayTests
+        tests/test_splay.cpp
+        src/FileNode.cpp
+        src/SplayTree.cpp
+        src/NaryTree.cpp
+)
+target_link_libraries(SplayTests PRIVATE Catch2::Catch2WithMain)
+catch_discover_tests(SplayTests)
