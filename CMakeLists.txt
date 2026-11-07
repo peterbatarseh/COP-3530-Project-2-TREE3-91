@@ -29,7 +29,11 @@ add_executable(Main
         src/main.cpp
         src/FileNode.cpp
         src/FileNode.h
+        src/DataGenerator.cpp
 )
+  if(WIN32)
+      target_link_options(Main PRIVATE -static)
+  endif()
 
 # Web frontend thing
 add_executable(ExportWeb
@@ -39,6 +43,7 @@ add_executable(ExportWeb
         src/JsonExport.cpp
 )
 target_link_libraries(ExportWeb PRIVATE httplib::httplib)
+
 if(WIN32)
     target_compile_definitions(ExportWeb PRIVATE _WIN32_WINNT=0x0A00)
     target_link_options(ExportWeb PRIVATE -static)
