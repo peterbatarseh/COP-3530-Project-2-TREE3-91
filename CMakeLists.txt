@@ -20,13 +20,18 @@ add_executable(Main
         src/main.cpp
         src/FileNode.cpp
         src/FileNode.h
+        src/BPlusTree.cpp
+        src/BPlusTree.h
 )
 
 # These tests can use the Catch2-provided main
 add_executable(Tests
         tests/test_nodes.cpp
+        tests/test_bplus_tree.cpp
         src/FileNode.cpp
         src/FileNode.h
+        src/BPlusTree.cpp
+        src/BPlusTree.h
 )
 
 target_link_libraries(Tests PRIVATE Catch2::Catch2WithMain) #link catch to test.cpp file
