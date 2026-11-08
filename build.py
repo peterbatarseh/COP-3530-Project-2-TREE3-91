@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 # builds and runs
-targets = ["Main", "Tests"]
+targets = ["Main", "Tests", "ExportWeb", "SplayTests"]
 targetCount = len(targets)
 parser = argparse.ArgumentParser()
 parser.add_argument("target", nargs="?", choices=targets)

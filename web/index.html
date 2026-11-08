@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TREE(3) File System Explorer</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@400;700;900&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="mode-bplus">
+
+  <!-- Draws Earth and Tree -->
+  <canvas id="gl"></canvas>
+  <div id="vignette"></div>
+  <div id="flash"></div>
+
+  <!-- Home Page -->
+  <section id="home" class="screen visible">
+    <header class="title-block">
+      <p class="kicker">COP 3530 - Project 2 - Team #91</p>
+      <h1 class="title">TREE<span class="title-paren">(3)</span></h1>
+      <p class="subtitle">File System Explorer</p>
+      <p class="authors">Muhammad Abdullah Abid / Peter Batarseh / Nadeem Taysun</p>
+    </header>
+
+    <div class="choices">
+      <button id="btn-bplus" class="choice choice-bplus" onclick="selectImplementation('B+ Tree')">
+        <svg class="choice-art" viewBox="0 0 120 64" aria-hidden="true">
+          <rect x="44" y="4" width="32" height="12" rx="3"/>
+          <rect x="10" y="40" width="22" height="12" rx="3"/>
+          <rect x="49" y="40" width="22" height="12" rx="3"/>
+          <rect x="88" y="40" width="22" height="12" rx="3"/>
+          <path d="M52 16 L21 40 M60 16 L60 40 M68 16 L99 40"/>
+          <path class="leaf-link" d="M32 46 L49 46 M71 46 L88 46"/>
+        </svg>
+        <span class="choice-label">B+ Tree</span>
+        <span class="choice-desc">Folders in the branches. Files live in linked leaves.</span>
+        <span class="choice-go">Enter ;</span>
+      </button>
+
+      <button id="btn-splay" class="choice choice-splay" onclick="selectImplementation('Splay Tree')">
+        <svg class="choice-art" viewBox="0 0 120 64" aria-hidden="true">
+          <circle cx="60" cy="10" r="7"/>
+          <circle cx="34" cy="32" r="6"/>
+          <circle cx="86" cy="32" r="6"/>
+          <circle cx="20" cy="54" r="5"/>
+          <circle cx="48" cy="54" r="5"/>
+          <circle cx="100" cy="54" r="5"/>
+          <path d="M55 15 L38 27 M65 15 L82 27 M30 37 L22 49 M38 37 L46 49 M90 37 L98 49"/>
+        </svg>
+        <span class="choice-label">Splay Tree</span>
+        <span class="choice-desc">A tree of splay trees. What you open rises to the top.</span>
+        <span class="choice-go">Enter ;</span>
+      </button>
+    </div>
+
+    <p class="hint">Click an implementation to begin</p>
+  </section>
+
+  <!-- Intro animation -->
+  <section id="cinematic" class="screen">
+    <div class="hud">
+      <p id="hud-line-1" class="hud-line"></p>
+      <p id="hud-line-2" class="hud-line hud-big"></p>
+      <p id="hud-line-3" class="hud-line"></p>
+    </div>
+    <button id="btn-skip" class="ghost-btn">Skip intro ;</button>
+  </section>
+
+  <!-- File exploerer -->
+  <section id="explorer" class="screen">
+    <header class="topbar">
+      <button class="brand" onclick="goHome()" title="Back to the globe">TREE<span>(3)</span></button>
+      <div class="impl-badge">
+        <span class="impl-dot"></span>
+        <span id="current-impl">B+ Tree</span>
+      </div>
+      <div class="topbar-actions">
+        <button id="btn-switch" class="ghost-btn" onclick="switchImplementation()">Switch to Splay Tree</button>
+        <button class="ghost-btn" onclick="goHome()">Home</button>
+      </div>
+    </header>
+
+    <aside class="panel">
+      <div class="metric metric-hero">
+        <span class="metric-label">Total nodes accessed</span>
+        <span id="node-access-count" class="metric-value">0</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Current directory</span>
+        <span id="current-dir" class="metric-value metric-path">/root</span>
+      </div>
+      <div class="metric-row">
+        <div class="metric">
+          <span class="metric-label">Subdirectories</span>
+          <span id="subfolder-count" class="metric-value">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Files</span>
+          <span id="file-count" class="metric-value">0</span>
+        </div>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Last access</span>
+        <span id="last-access" class="metric-value metric-small">-</span>
+      </div>
+
+      <div class="nav-bar">
+        <button id="btn-back" class="nav-btn" onclick="goBack()" disabled> Back</button>
+        <button class="nav-btn" onclick="resetCounter()">Reset counter</button>
+      </div>
+
+      <ul class="legend">
+        <li><span class="lg lg-folder"></span>Folder (click to open)</li>
+        <li><span class="lg lg-file"></span>File (click to search)</li>
+        <li><span class="lg lg-path"></span>Path from root</li>
+      </ul>
+      <p class="panel-tip">Scroll to zoom - drag to pan</p>
+    </aside>
+
+    <div class="file-display" id="file-display">
+      <p class="empty-msg">Loading...</p>
+    </div>
+  </section>
+
+  <div id="tooltip"></div>
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

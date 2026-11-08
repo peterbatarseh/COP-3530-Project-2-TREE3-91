@@ -14,15 +14,48 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+# httplib
+FetchContent_Declare(
+  httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG        v0.64.0
+  GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(httplib)
+
 include_directories(src)
 
 add_executable(Main
         src/main.cpp
         src/FileNode.cpp
-        src/FileNode.h
+        src/DataGenerator.cpp
         src/BPlusTree.cpp
-        src/BPlusTree.h
+        src/SplayTree.cpp
+        src/NaryTree.cpp
+        src/TreeLoader.cpp
 )
+  if(WIN32)
+      target_link_options(Main PRIVATE -static)
+  endif()
+
+# Web frontend thing
+add_executable(ExportWeb
+        src/export_main.cpp
+        src/WebServer.cpp
+        src/FileNode.cpp
+        src/JsonExport.cpp
+        src/DataGenerator.cpp
+        src/BPlusTree.cpp
+        src/SplayTree.cpp
+        src/NaryTree.cpp
+        src/TreeLoader.cpp
+) 
+target_link_libraries(ExportWeb PRIVATE httplib::httplib)
+
+if(WIN32)
+    target_compile_definitions(ExportWeb PRIVATE _WIN32_WINNT=0x0A00)
+    target_link_options(ExportWeb PRIVATE -static)
+endif()
 
 add_executable(Tests
         tests/test_nodes.cpp
