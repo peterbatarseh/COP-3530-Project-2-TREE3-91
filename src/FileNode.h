@@ -4,20 +4,21 @@
 #include <vector>
 
 class FileNode {
-protected:
+  protected:
     bool folder;
     std::string name;
     FileNode *parent;
     std::vector<FileNode *> children;
     int height;
-public:
+
+  public:
     FileNode();
     FileNode(const std::string &name, FileNode *parent, bool isFolder);
     ~FileNode();
 
     // Strange behavior happens with copying, so I'm turning this off
-    FileNode(const FileNode&) = delete;
-    FileNode& operator=(const FileNode&) = delete;
+    FileNode(const FileNode &) = delete;
+    FileNode &operator=(const FileNode &) = delete;
 
     std::string getName() const;
     FileNode *getParent() const;
