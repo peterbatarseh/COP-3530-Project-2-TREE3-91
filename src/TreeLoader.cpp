@@ -50,22 +50,25 @@ std::vector<std::string> split(const std::string &path) {
     std::stringstream ss(path);
     std::string part;
     while (std::getline(ss, part, '/')) {
-        if (!part.empty()) parts.push_back(part);
+        if (!part.empty())
+            parts.push_back(part);
     }
     return parts;
 }
 
-}  
+} // namespace
 
 void loadIntoBPlus(const FileNode *root, BPlusTree &tree) {
     addToBPlus(root, "", tree);
 }
 
 void loadIntoNary(const FileNode *root, NaryTree &tree) {
+    // Insertion requires starting from the root to find the correct path
     tree.goToRoot();
     addToNary(root, tree);
+    // Go back to root for future insertions + reset node accesses
     tree.goToRoot();
-    tree.resetNodeAccesses();  
+    tree.resetNodeAccesses();
 }
 
 std::vector<std::string> allFilePaths(const FileNode *root) {
@@ -82,12 +85,14 @@ std::size_t bplusLookup(BPlusTree &tree, const std::string &path) {
 
 int splayLookup(NaryTree &tree, const std::string &path) {
     std::vector<std::string> parts = split(path);
-    if (parts.empty()) return 0;
+    if (parts.empty())
+        return 0;
 
     tree.goToRoot();
     tree.resetNodeAccesses();
     for (std::size_t i = 0; i + 1 < parts.size(); i++) {
-        if (!tree.changeDir(parts[i])) break;
+        if (!tree.changeDir(parts[i]))
+            break;
     }
     tree.findFile(parts.back());
     int accesses = tree.getNodeAccesses();
@@ -99,7 +104,8 @@ int splayFolderLookup(NaryTree &tree, const std::string &path) {
     tree.goToRoot();
     tree.resetNodeAccesses();
     for (const std::string &dir : split(path)) {
-        if (!tree.changeDir(dir)) break;
+        if (!tree.changeDir(dir))
+            break;
     }
     int accesses = tree.getNodeAccesses();
     tree.goToRoot();
