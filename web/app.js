@@ -1,32 +1,21 @@
-/*
-TREE(3) File System Explorer
-
-Three scenes:
-  1. HOME       3D Earth (Three.js) with the title and the two implementation choices
-  2. CINEMATIC  zoom into a forest on Earth, a real 3D tree grows, then flips upside
-                down (real trees grow up, data trees grow down)
-  3. EXPLORER   the file tree drawn as a data structure (D3), loaded from the C++ server
-
-Data comes from the C++ backend (src/WebServer.cpp):
-  GET /backend/bplus  and  GET /backend/splay
-Each returns { implementation, root: { name, folder, accesses, children: [...] } }
-
-Three.js, D3, the Earth textures and the fonts load from the internet (jsDelivr / Google Fonts).
-*/
+// tree(3) file explorer
+// home screen (3d earth) -> intro animation -> file tree explorer
+// tree data comes from the c++ server in src/WebServer.cpp
 
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
 
 const d3 = window.d3;
 
+// where to get each tree from the server
 const DATA_FILES = {
   'B+ Tree': '/backend/bplus',
-  'B+ Tree Accesses': '/backend/bplus_accesses', // access a specific node by its path
+  'B+ Tree Accesses': '/backend/bplus_accesses',
 
   'Splay Tree': '/backend/splay',
-  'Splay Tree Accesses': '/backend/splay_accesses' // access a specific node by its name
+  'Splay Tree Accesses': '/backend/splay_accesses'
 };
 
-// Real forests the camera can dive into
+// forests the camera can zoom into
 const FORESTS = [
   { name: 'Sequoia National Park, USA', lat: 36.49, lon: -118.57 },
   { name: 'Amazon Rainforest, Brazil', lat: -3.47, lon: -62.37 },
@@ -40,7 +29,7 @@ const FORESTS = [
   { name: 'Monteverde Cloud Forest, Costa Rica', lat: 10.30, lon: -84.80 }
 ];
 
-const CHILD_PAGE = 60;  // how many children to draw before showing "+N more"
+const CHILD_PAGE = 60;  // max items shown in a folder before "+N more"
 
 const state = {
   implementation: 'B+ Tree',
@@ -54,11 +43,9 @@ const state = {
 const $ = id => document.getElementById(id);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ============================================================
-   Small animation helpers
-   ============================================================ */
+// animation helpers
 
-let skipping = false;  // set by "Skip intro" / Esc; makes every tween finish instantly
+let skipping = false;  // true when the intro is skipped
 
 const ease = {
   inOut: t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
@@ -110,9 +97,7 @@ function accentColor() {
   return state.implementation === 'Splay Tree' ? 0xff6fd8 : 0x4fd8ff;
 }
 
-/* ============================================================
-   Three.js setup (shared renderer + camera)
-   ============================================================ */
+// three.js setup
 
 const canvas = $('gl');
 let renderer = null;
@@ -162,9 +147,7 @@ function initGL() {
   return true;
 }
 
-/* ============================================================
-   SCENE 1 — EARTH
-   ============================================================ */
+// home screen earth
 
 const earthWorld = {};
 
@@ -180,7 +163,7 @@ function buildEarthScene() {
   const bump = loader.load(TEXTURES + 'earth-topology.png');
   const water = loader.load(TEXTURES + 'earth-water.png');
 
-  // Pivot holds the axial tilt; the Earth spins inside it
+  // tilt the earth like the real one
   const pivot = new THREE.Group();
   pivot.rotation.z = 0.41;
   scene.add(pivot);
@@ -196,10 +179,10 @@ function buildEarthScene() {
       shininess: 22
     })
   );
-  earth.rotation.y = -1.9;  // start with the Americas facing us
+  earth.rotation.y = -1.9;  // start facing the americas
   pivot.add(earth);
 
-  // Thin rim of light on the planet's edge
+  // glow on the edge
   const rim = new THREE.Mesh(
     new THREE.SphereGeometry(1.002, 96, 96),
     new THREE.ShaderMaterial({
@@ -225,7 +208,7 @@ function buildEarthScene() {
   );
   pivot.add(rim);
 
-  // Outer atmosphere glow (fades out away from the surface)
+  // atmosphere
   const atmosphere = new THREE.Mesh(
     new THREE.SphereGeometry(1.14, 96, 96),
     new THREE.ShaderMaterial({
@@ -252,7 +235,7 @@ function buildEarthScene() {
   );
   scene.add(atmosphere);
 
-  // Stars
+  // stars
   const starCount = 5000;
   const starPos = new Float32Array(starCount * 3);
   const starCol = new Float32Array(starCount * 3);
@@ -283,14 +266,14 @@ function buildEarthScene() {
     if (earthWorld.spinning) earth.rotateY(dt * 0.045);
     stars.rotation.y += dt * 0.003;
     if (state.phase === 'home') {
-      // gentle parallax with the mouse
+      // move a little with the mouse
       camera.position.x = lerp(camera.position.x, pointer.x * 0.25, 0.04);
       camera.position.y = lerp(camera.position.y, HOME_CAM.pos.y - pointer.y * 0.12, 0.04);
     }
   });
 }
 
-// Earth sits low in the frame like a horizon, under the title
+// camera spot on the home screen
 const HOME_CAM = {
   pos: new THREE.Vector3(0, -0.15, 2.75),
   look: new THREE.Vector3(0, 0.62, 0),
@@ -308,7 +291,7 @@ function enterHomeView() {
   camLook.copy(HOME_CAM.look);
 }
 
-// Rotation that turns (lat, lon) on the texture to face the camera (+Z)
+// turn the earth so a lat/lon faces the camera
 function quaternionFacing(lat, lon) {
   const u = (lon + 180) / 360 * Math.PI * 2;
   const theta = (90 - lat) * Math.PI / 180;
@@ -318,9 +301,7 @@ function quaternionFacing(lat, lon) {
   return new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, yaw, 0, 'XYZ'));
 }
 
-/* ============================================================
-   SCENE 2 — FOREST + REAL 3D TREE
-   ============================================================ */
+// forest and 3d tree
 
 const forest = {};
 
@@ -383,7 +364,7 @@ function buildRealTree(rng) {
 
   branch(root, 2.3, 0.26, 0);
 
-  // Leaves: one instanced mesh, placed around every branch tip
+  // leaves at the end of each branch
   root.updateMatrixWorld(true);
   const leafGeo = new THREE.IcosahedronGeometry(0.15, 0);
   const leafMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.75, flatShading: true, emissive: 0x000000 });
@@ -432,7 +413,7 @@ function buildForestScene() {
   const scene = new THREE.Scene();
   const rng = mulberry32(Math.floor(Math.random() * 1e9));
 
-  // Dusk sky
+  // sky
   const sky = new THREE.Mesh(
     new THREE.SphereGeometry(120, 32, 16),
     new THREE.ShaderMaterial({
@@ -456,7 +437,7 @@ function buildForestScene() {
   scene.add(sky);
   scene.fog = new THREE.FogExp2(0x2a1f3d, 0.028);
 
-  // Ground
+  // ground
   const ground = new THREE.Mesh(
     new THREE.CircleGeometry(60, 64),
     new THREE.MeshStandardMaterial({ color: 0x14301d, roughness: 1 })
@@ -465,7 +446,7 @@ function buildForestScene() {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // A ring of dark pines in the distance
+  // trees in the background
   const pineCount = 90;
   const pines = new THREE.InstancedMesh(
     new THREE.ConeGeometry(1, 1, 7).translate(0, 0.5, 0),
@@ -486,7 +467,7 @@ function buildForestScene() {
   }
   scene.add(pines);
 
-  // The hero tree, inside a pivot so it can flip upside down later
+  // main tree (in a pivot so it can flip later)
   const tree = buildRealTree(rng);
   const PIVOT_Y = 3.4;
   const pivot = new THREE.Group();
@@ -495,7 +476,7 @@ function buildForestScene() {
   pivot.add(tree.root);
   scene.add(pivot);
 
-  // Fireflies
+  // fireflies
   const flyCount = 70;
   const flyBase = [];
   const flyPos = new Float32Array(flyCount * 3);
@@ -513,7 +494,7 @@ function buildForestScene() {
   const flies = new THREE.Points(flyGeo, flyMat);
   scene.add(flies);
 
-  // Lights
+  // lights
   scene.add(new THREE.HemisphereLight(0xb9a8ff, 0x1a2a1a, 1.1));
   const sun = new THREE.DirectionalLight(0xffb27a, 3.0);
   sun.position.set(-7, 9, 5);
@@ -535,15 +516,13 @@ function buildForestScene() {
     }
     flyGeo.attributes.position.needsUpdate = true;
     flyMat.opacity = 0.65 + Math.sin(t * 3) * 0.25;
-    tree.root.rotation.z = Math.sin(t * 0.8) * 0.008;  // breeze
+    tree.root.rotation.z = Math.sin(t * 0.8) * 0.008;  // sway
   });
 
   Object.assign(forest, { scene, tree, pivot, ground, pines, flyMat, PIVOT_Y });
 }
 
-/* ============================================================
-   The cinematic: Earth -> forest -> flip into a data tree
-   ============================================================ */
+// intro animation
 
 async function runCinematic(dataPromise) {
   state.phase = 'cinematic';
@@ -556,7 +535,7 @@ async function runCinematic(dataPromise) {
   const coords = `${Math.abs(spot.lat).toFixed(2)}°${spot.lat >= 0 ? 'N' : 'S'}  ` +
                  `${Math.abs(spot.lon).toFixed(2)}°${spot.lon >= 0 ? 'E' : 'W'}`;
 
-  // 1. Turn the planet so the forest faces us, center the camera
+  // turn the earth to the forest
   earthWorld.spinning = false;
   const earth = earthWorld.earth;
   const q0 = earth.quaternion.clone();
@@ -579,7 +558,7 @@ async function runCinematic(dataPromise) {
   typeText(l3, coords);
   await wait(500);
 
-  // 2. Dive toward the surface
+  // zoom in
   typeText(l1, 'Descending');
   const fov0 = camera.fov;
   await tween(2100, t => {
@@ -588,7 +567,7 @@ async function runCinematic(dataPromise) {
     camera.updateProjectionMatrix();
   }, ease.in);
 
-  // 3. White flash, swap to the forest
+  // flash and switch to the forest
   const flash = $('flash');
   await tween(260, t => { flash.style.opacity = t; }, ease.linear);
   if (!forest.scene) buildForestScene();
@@ -604,7 +583,7 @@ async function runCinematic(dataPromise) {
   l1.textContent = l2.textContent = l3.textContent = '';
   await tween(700, t => { flash.style.opacity = 1 - t; }, ease.out);
 
-  // 4. The real tree grows, camera orbits
+  // grow the tree
   typeText(l1, 'Root node planted');
   typeText(l2, 'Real trees grow up…', 34);
   const a0 = Math.atan2(6, 9);
@@ -616,7 +595,7 @@ async function runCinematic(dataPromise) {
     camLook.set(0, lerp(3.0, 3.6, t), 0);
   }, ease.inOut);
 
-  // 5. Flip it upside down: data structure trees have the root on top
+  // flip it upside down (root on top like a data tree)
   typeText(l2, '…data trees grow down.', 34);
   typeText(l3, 'root on top · leaves at the bottom');
   const accent = new THREE.Color(accentColor());
@@ -633,22 +612,20 @@ async function runCinematic(dataPromise) {
     forest.tree.bark.emissive.copy(accent).multiplyScalar(t * 0.6);
   });
 
-  // 6. Hand over to the data explorer
+  // open the explorer
   let data = null, error = null;
   try { data = await dataPromise; } catch (e) { error = e; }
   await openExplorer(data, error, { fromCinematic: true });
   skipping = false;
 }
 
-/* ============================================================
-   Data loading
-   ============================================================ */
+// loading data
 
 async function fetchTree(impl) {
   const response = await fetch(DATA_FILES[impl]);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
-  // give every node a stable id so D3 can animate it
+  // give each node an id for d3
   let id = 0;
   const stack = [data.root];
   while (stack.length) {
@@ -659,12 +636,10 @@ async function fetchTree(impl) {
   return data;
 }
 
-/* ============================================================
-   SCENE 3 — EXPLORER (the data structure view)
-   ============================================================ */
+// file tree explorer
 
 let svg, gZoom, gLinks, gNodes, gFx, zoom;
-let positions = new Map();  // node id -> {x, y} from the last render
+let positions = new Map();  // where each node was last drawn
 
 function initTreeView() {
   const box = $('file-display');
@@ -718,7 +693,7 @@ async function openExplorer(data, error, { fromCinematic = false } = {}) {
   initTreeView();
   updatePanel();
 
-  // grow the data tree: root first, then its children branch out
+  // draw root first, then its children
   renderTree({ hideChildren: true });
   await wait(fromCinematic ? 500 : 250);
   renderTree();
@@ -728,7 +703,7 @@ function currentFolder() {
   return state.path[state.path.length - 1];
 }
 
-// The tree we draw: the path from root to the current folder, plus the current folder's children
+// what gets drawn: path from root + current folder's items
 function buildView({ hideChildren = false } = {}) {
   const make = (n, kind) => ({ id: n._id, node: n, kind, children: [] });
   const top = make(state.path[0], 'path');
@@ -748,12 +723,12 @@ function buildView({ hideChildren = false } = {}) {
   return d3.hierarchy(top);
 }
 
-const DY = 120;      // vertical space between path levels
-const CELL_X = 104;  // grid spacing for the current folder's contents
+const DY = 120;      // space between levels
+const CELL_X = 104;  // grid spacing
 const CELL_Y = 70;
 const linkPath = d3.linkVertical().x(d => d.x).y(d => d.y);
 
-// Path nodes go straight down; the current folder's contents wrap into a grid below it
+// path goes straight down, folder items go in a grid
 function layoutTree(rootH) {
   const rect = svg.node().getBoundingClientRect();
   const cols = Math.max(4, Math.min(14, Math.floor((rect.width - 80) / CELL_X)));
@@ -789,7 +764,7 @@ function renderTree(opts = {}) {
   const dur = skipping ? 0 : 700;
   const stagger = (d, i) => (d.data && d.data.kind !== 'path' ? Math.min(i * 9, 450) : 0);
 
-  // ---- links ----
+  // lines
   const link = gLinks.selectAll('path.link').data(links, d => d.target.data.id);
 
   link.exit().transition().duration(dur * 0.6)
@@ -812,7 +787,7 @@ function renderTree(opts = {}) {
     .transition().duration(dur).delay((d, i) => stagger(d.target, i))
     .attr('d', d => linkPath(d));
 
-  // ---- nodes ----
+  // nodes
   const node = gNodes.selectAll('g.node').data(nodes, d => d.data.id);
 
   node.exit().transition().duration(dur * 0.6)
@@ -835,7 +810,7 @@ function renderTree(opts = {}) {
 
   entered.each(function (d) {
     const g = d3.select(this);
-    g.append('circle').attr('class', 'hit').attr('r', 18);  // bigger, invisible click target
+    g.append('circle').attr('class', 'hit').attr('r', 18);  // bigger click area
     if (d.data.kind === 'more' || d.data.node.folder) g.append('circle').attr('class', 'shape');
     else g.append('rect').attr('class', 'shape').attr('x', -7).attr('y', -7).attr('width', 14).attr('height', 14).attr('rx', 3);
     g.append('text');
@@ -874,7 +849,7 @@ function truncate(s, n) {
   return s.length > n ? s.slice(0, n - 1) + '…' : s;
 }
 
-// Zoom so the last few levels of the path and the current folder's children fit
+// zoom to fit the current folder
 function fitView(nodes, current, dur = 700) {
   if (!svg || !current) return;
   const rect = svg.node().getBoundingClientRect();
@@ -892,7 +867,7 @@ function fitView(nodes, current, dur = 700) {
   svg.transition().duration(dur ? dur + 200 : 0).ease(d3.easeCubicInOut).call(zoom.transform, transform);
 }
 
-/* ---------- Clicking nodes ---------- */
+// clicking nodes
 
 function onNodeClick(event, d) {
   event.stopPropagation();
@@ -934,19 +909,18 @@ async function searchFile(file, d) {
   const folder = currentFolder();
   let url;
 
-  // Worst language ever?
+  // build the path without root
+  let path = "";
+  for (const directory of state.path.slice(1)) {
+    path += directory.name + '/';
+  }
+
   if (implementation === "B+ Tree") {
-    let path = "";
-
-    // exclude root
-    for (const directory of state.path.slice(1)) {
-      path += directory.name + '/';
-    }
-
     url = "/backend/bplus_accesses?path=" + encodeURIComponent(path + file.name);
   }
   else {
-    url = "/backend/splay_accesses?name=" + encodeURIComponent(file.name);
+    // splay needs the full path to find the right folder
+    url = "/backend/splay_accesses?path=" + encodeURIComponent(path + file.name);
   }
 
   try {
@@ -989,9 +963,9 @@ function resetCounter() {
   $('last-access').textContent = 'Counter reset';
 }
 
-/* ---------- Effects ---------- */
+// effects
 
-// A glowing dot runs from the root down the path: one hop per node visited
+// dot that runs down the path
 function runPulse(points) {
   points = points.filter(Boolean);
   if (!gFx || points.length < 1) return;
@@ -1026,7 +1000,7 @@ function toast(html) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
 }
 
-/* ---------- Tooltip ---------- */
+// tooltip
 
 function showTip(event, d) {
   const tip = $('tooltip');
@@ -1036,7 +1010,7 @@ function showTip(event, d) {
     const n = d.data.node;
     const kids = n.children || [];
     const folders = kids.filter(c => c.folder).length;
-    tip.innerHTML = `<b>${n.name}</b><br>${n.folder ? 'Folder' : 'File'} · ${n.accesses} nodes to reach` +
+    tip.innerHTML = `<b>${n.name}</b><br>` + (n.folder ? `Folder · ${n.accesses} nodes to reach` : 'File · click to search') +
       (n.folder ? `<br>${folders.toLocaleString()} folders · ${(kids.length - folders).toLocaleString()} files` : '');
   }
   tip.classList.add('show');
@@ -1053,7 +1027,7 @@ function hideTip() {
   $('tooltip').classList.remove('show');
 }
 
-/* ---------- Side panel ---------- */
+// side panel
 
 function updatePanel(updateCounter = true) {
   const folder = currentFolder();
@@ -1069,16 +1043,14 @@ function updatePanel(updateCounter = true) {
   $('btn-back').disabled = state.path.length <= 1;
 }
 
-/* ============================================================
-   Buttons (called from index.html)
-   ============================================================ */
+// buttons from index.html
 
 function selectImplementation(implName) {
   if (state.phase !== 'home') return;
   state.implementation = implName;
   setImplementationClass(implName);
   const dataPromise = fetchTree(implName);
-  dataPromise.catch(() => {});  // handled when the explorer opens
+  dataPromise.catch(() => {});
 
   if (!renderer) {
     dataPromise.then(d => openExplorer(d, null), e => openExplorer(null, e));
@@ -1135,9 +1107,7 @@ window.addEventListener('resize', () => {
   }, 200);
 });
 
-/* ============================================================
-   Start
-   ============================================================ */
+// start
 
 if (initGL()) {
   buildEarthScene();

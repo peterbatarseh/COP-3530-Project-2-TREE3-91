@@ -3,15 +3,20 @@
 #include <httplib.h>
 
 #include <iostream>
+#include <mutex>
 
+#include "BPlusTree.h"
+#include "FileNode.h"
 #include "JsonExport.h"
+#include "NaryTree.h"
+#include "TreeLoader.h"
 
 using namespace std;
 
-// TODO replace with B+ tree class
-int runWebServer(const FileNode *bplusRoot, const FileNode *splayRoot) {
+int runWebServer(const FileNode *root, BPlusTree &bplus, NaryTree &nary) {
     httplib::Server server;
 
+    // serve the web folder
     bool mounted = server.set_mount_point("/", "web");
     if (!mounted) {
         std::cout << "Server not loading" << std::endl;
@@ -19,26 +24,41 @@ int runWebServer(const FileNode *bplusRoot, const FileNode *splayRoot) {
         return 1;
     }
 
-    // May divine wrath fall upon whoever authored the syntax of lambdas
-    // simultaneously bless the people who made this library because I'd rather walk over burning coals than do networking
-    server.Get("/backend/bplus", [bplusRoot](const httplib::Request &, httplib::Response &response) {
-        response.set_content(toJson(bplusRoot, "B+ Tree"), "application/json");
+    // make the tree data once at the start
+    std::cout << "Preparing tree data..." << std::endl;
+    const std::string bplusJson = toJson(root, "B+ Tree", [&bplus](const std::string &path) {
+        return bplusLookup(bplus, path);
     });
 
-    server.Get("/backend/bplus_accesses", [](const httplib::Request &request, httplib::Response &response) {
+    const std::string splayJson = toJson(root, "Splay Tree", [&nary](const std::string &path) {
+        return (std::size_t)splayFolderLookup(nary, path);
+    });
+
+    // only one search at a time
+    std::mutex treeLock; 
+
+    // send the b+ tree
+    server.Get("/backend/bplus", [&bplusJson](const httplib::Request &, httplib::Response &response) {
+        response.set_content(bplusJson, "application/json");
+    });
+
+    // search the b+ tree for a file
+    server.Get("/backend/bplus_accesses", [&bplus, &treeLock](const httplib::Request &request, httplib::Response &response) {
         std::string path = request.get_param_value("path");
-        // TODO add B+ implementation
-        response.set_content("3", "application/json");
+        std::lock_guard<std::mutex> guard(treeLock);
+        response.set_content(std::to_string(bplusLookup(bplus, path)), "application/json");
     });
 
-    server.Get("/backend/splay", [splayRoot](const httplib::Request &, httplib::Response &response) {
-        response.set_content(toJson(splayRoot, "Splay Tree"), "application/json");
+    // send the splay tree
+    server.Get("/backend/splay", [&splayJson](const httplib::Request &, httplib::Response &response) {
+        response.set_content(splayJson, "application/json");
     });
 
-    server.Get("/backend/splay_accesses", [splayRoot](const httplib::Request &request, httplib::Response &response) {
-        std::string name = request.get_param_value("name");
-        // TODO whatever splay tree implementation Taysun will do and return access count
-        response.set_content("3", "application/json");
+    // search the splay tree for a file
+    server.Get("/backend/splay_accesses", [&nary, &treeLock](const httplib::Request &request, httplib::Response &response) {
+        std::string path = request.get_param_value("path");
+        std::lock_guard<std::mutex> guard(treeLock);
+        response.set_content(std::to_string(splayLookup(nary, path)), "application/json");
     });
 
     if (!server.bind_to_port("127.0.0.1", 8000)) {

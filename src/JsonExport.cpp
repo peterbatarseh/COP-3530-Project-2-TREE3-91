@@ -5,6 +5,7 @@
 
 namespace {
 
+// make text safe to put inside JSON quotes
 std::string escape(const std::string &s) {
     std::string out;
     for (char c : s) {
@@ -19,8 +20,7 @@ std::string escape(const std::string &s) {
     return out;
 }
 
-// Placeholder access count: visiting each node on the path from the root,
-// scanning siblings left to right until the right one is found.
+// fake count used when no tree is given
 int placeholderAccesses(const FileNode *node) {
     int count = 1;
     while (node->getParent() != nullptr) {
@@ -34,19 +34,27 @@ int placeholderAccesses(const FileNode *node) {
     return count;
 }
 
-void writeNode(std::ostringstream &out, const FileNode *node, int indent) {
+// write one node and everything inside it
+void writeNode(std::ostringstream &out, const FileNode *node, int indent,
+               const std::string &path, const FolderAccessFn &folderAccesses) {
+    // files get searched live, so only folders need a count here
+    std::size_t accesses = 0;
+    if (node->isFolder())
+        accesses = folderAccesses ? folderAccesses(path) : placeholderAccesses(node);
+
     std::string pad(indent, ' ');
     out << pad << "{\n";
     out << pad << "  \"name\": \"" << escape(node->getName()) << "\",\n";
     out << pad << "  \"folder\": " << (node->isFolder() ? "true" : "false") << ",\n";
-    out << pad << "  \"accesses\": " << placeholderAccesses(node);
+    out << pad << "  \"accesses\": " << accesses;
 
     if (node->isFolder()) {
         out << ",\n" << pad << "  \"children\": [";
         const auto &children = node->getChildren();
         for (size_t i = 0; i < children.size(); i++) {
             out << (i == 0 ? "\n" : ",\n");
-            writeNode(out, children[i], indent + 4);
+            const std::string &name = children[i]->getName();
+            writeNode(out, children[i], indent + 4, path.empty() ? name : path + "/" + name, folderAccesses);
         }
         out << (children.empty() ? "]" : "\n" + pad + "  ]");
     }
@@ -55,10 +63,11 @@ void writeNode(std::ostringstream &out, const FileNode *node, int indent) {
 
 }  // namespace
 
-std::string toJson(const FileNode *root, const std::string &implementation) {
+std::string toJson(const FileNode *root, const std::string &implementation,
+                   const FolderAccessFn &folderAccesses) {
     std::ostringstream out;
     out << "{\n  \"implementation\": \"" << escape(implementation) << "\",\n  \"root\":\n";
-    writeNode(out, root, 2);
+    writeNode(out, root, 2, "", folderAccesses);
     out << "\n}\n";
     return out.str();
 }

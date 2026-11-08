@@ -1,7 +1,9 @@
 #pragma once
 
 class FileNode;
+class BPlusTree; 
+class NaryTree;  
 
 // Initializes server
-// might remove this this is very unecessary
-int runWebServer(const FileNode* bplusRoot, const FileNode* splayRoot);
+// root is the generated file system, the trees already have it loaded
+int runWebServer(const FileNode *root, BPlusTree &bplus, NaryTree &nary);

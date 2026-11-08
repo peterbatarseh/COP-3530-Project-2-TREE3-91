@@ -44,7 +44,12 @@ add_executable(ExportWeb
         src/WebServer.cpp
         src/FileNode.cpp
         src/JsonExport.cpp
-)
+        src/DataGenerator.cpp
+        src/BPlusTree.cpp
+        src/SplayTree.cpp
+        src/NaryTree.cpp
+        src/TreeLoader.cpp
+) 
 target_link_libraries(ExportWeb PRIVATE httplib::httplib)
 
 if(WIN32)

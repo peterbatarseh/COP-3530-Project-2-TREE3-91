@@ -1,58 +1,28 @@
-/*
-Builds dummy FileNodes and exports them as JSON to render
-Note: this might be a problem given we need a huge dataset and will have to send 100K+ nodes in one payload
-It's fine!
-*/
+//Generates the dataset, loads it into both trees and starts the web server
 
 #include <iostream>
-#include <string>
 
+#include "BPlusTree.h"
+#include "DataGenerator.h"
 #include "FileNode.h"
-#include "JsonExport.h"
+#include "NaryTree.h"
+#include "TreeLoader.h"
 #include "WebServer.h"
 
-static FileNode *folder(FileNode *parent, const std::string &name) {
-    auto *n = new FileNode(name, nullptr, true);
-    if (parent)
-        parent->addChild(n);
-    return n;
-}
-
-static void file(FileNode *parent, const std::string &name) {
-    parent->addChild(new FileNode(name, nullptr, false));
-}
-
-static FileNode *buildSample() {
-    FileNode *root = folder(nullptr, "root");
-
-    FileNode *docs = folder(root, "Documents");
-    file(docs, "resume.pdf");
-    file(docs, "notes.txt");
-    FileNode *school = folder(docs, "School");
-    file(school, "COP3530_syllabus.pdf");
-    file(school, "project2_report.docx");
-
-    FileNode *pics = folder(root, "Pictures");
-    file(pics, "beach.png");
-    file(pics, "family.jpg");
-    folder(pics, "Screenshots");
-
-    FileNode *code = folder(root, "Code");
-    file(code, "main.cpp");
-    file(code, "FileNode.h");
-    file(code, "FileNode.cpp");
-
-    file(root, "todo.txt");
-    return root;
-}
-
 int main() {
+    std::cout << "Generating dataset..." << std::endl;
+    FileNode *root = generateTree(); 
 
-    // we don't need a json file middleman anymore since it sends it through http
-    FileNode *root = buildSample();
-    int result = runWebServer(root, root);
+    //load the same data into both trees
+    std::cout << "Loading into B+ tree and splay tree..." << std::endl;
+    BPlusTree bplus("root");
+    NaryTree nary("root");
+    loadIntoBPlus(root, bplus);
+    loadIntoNary(root, nary);
 
-    // clean up
+    int result = runWebServer(root, bplus, nary);  //pass the trees to the server
+
+
     delete root;
     return result;
 }
