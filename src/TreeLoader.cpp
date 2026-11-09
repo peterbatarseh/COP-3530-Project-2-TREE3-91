@@ -56,7 +56,8 @@ std::vector<std::string> split(const std::string &path) {
     std::stringstream ss(path);
     std::string part;
     while (std::getline(ss, part, '/')) {
-        if (!part.empty()) parts.push_back(part);
+        if (!part.empty())
+            parts.push_back(part);
     }
     return parts;
 }
@@ -71,10 +72,12 @@ void loadIntoBPlus(const FileNode *root, BPlusTree &tree) {
 
 // fills the splay tree, then resets the counter so loading doesn't count
 void loadIntoNary(const FileNode *root, NaryTree &tree) {
+    // Insertion requires starting from the root to find the correct path
     tree.goToRoot();
     addToNary(root, tree);
+    // Go back to root for future insertions + reset node accesses
     tree.goToRoot();
-    tree.resetNodeAccesses();  
+    tree.resetNodeAccesses();
 }
 
 // every file path (used for the random searches in the benchmark)
@@ -94,13 +97,15 @@ std::size_t bplusLookup(BPlusTree &tree, const std::string &path) {
 // searches the splay tree for a file and returns how many nodes it visited
 int splayLookup(NaryTree &tree, const std::string &path) {
     std::vector<std::string> parts = split(path);
-    if (parts.empty()) return 0;
+    if (parts.empty())
+        return 0;
 
     tree.goToRoot();
     tree.resetNodeAccesses();
     // go into each folder, then find the file in the last one
     for (std::size_t i = 0; i + 1 < parts.size(); i++) {
-        if (!tree.changeDir(parts[i])) break;
+        if (!tree.changeDir(parts[i]))
+            break;
     }
     tree.findFile(parts.back());
     int accesses = tree.getNodeAccesses();
@@ -113,7 +118,8 @@ int splayFolderLookup(NaryTree &tree, const std::string &path) {
     tree.goToRoot();
     tree.resetNodeAccesses();
     for (const std::string &dir : split(path)) {
-        if (!tree.changeDir(dir)) break;
+        if (!tree.changeDir(dir))
+            break;
     }
     int accesses = tree.getNodeAccesses();
     tree.goToRoot();

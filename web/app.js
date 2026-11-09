@@ -615,6 +615,9 @@ function resetCounter() {
 // effects
 
 // dot that moves down the path to show the search
+  // AI use: Claude (Anthropic, Claude Opus 5.5) helped me learn how to make the
+  // The glowing dot that goes down the line to go to files.
+  // Prompt: "how to make glowing dot animation go down file node tree to nodes"
 function runPulse(points) {
   points = points.filter(Boolean);
   if (!gFx || points.length < 1) return;
