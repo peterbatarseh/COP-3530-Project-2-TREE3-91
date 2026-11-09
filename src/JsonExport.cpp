@@ -20,7 +20,7 @@ std::string escape(const std::string &s) {
     return out;
 }
 
-// fake count used when no tree is given
+// a backup count if no tree is passed in 
 int placeholderAccesses(const FileNode *node) {
     int count = 1;
     while (node->getParent() != nullptr) {
@@ -37,7 +37,7 @@ int placeholderAccesses(const FileNode *node) {
 // write one node and everything inside it
 void writeNode(std::ostringstream &out, const FileNode *node, int indent,
                const std::string &path, const FolderAccessFn &folderAccesses) {
-    // files get searched live, so only folders need a count here
+    // only folders get a count here, files are counted when you click them
     std::size_t accesses = 0;
     if (node->isFolder())
         accesses = folderAccesses ? folderAccesses(path) : placeholderAccesses(node);
@@ -61,7 +61,7 @@ void writeNode(std::ostringstream &out, const FileNode *node, int indent,
     out << "\n" << pad << "}";
 }
 
-}  // namespace
+}  // namespace (ends the helpers)
 
 std::string toJson(const FileNode *root, const std::string &implementation,
                    const FolderAccessFn &folderAccesses) {

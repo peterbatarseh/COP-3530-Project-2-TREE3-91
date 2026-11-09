@@ -13,7 +13,7 @@
 
 using namespace std;
 
-int runWebServer(const FileNode *root, BPlusTree &bplus, NaryTree &nary) {
+int runWebServer(const FileNode *root, BPlusTree &bplus, NaryTree &nary, long long bplusMs, long long splayMs) {
     httplib::Server server;
 
     // serve the web folder
@@ -34,8 +34,10 @@ int runWebServer(const FileNode *root, BPlusTree &bplus, NaryTree &nary) {
         return (std::size_t)splayFolderLookup(nary, path);
     });
 
-    // only one search at a time
-    std::mutex treeLock; 
+    // mutex is kind of like a lock so only one search runs at a time
+    // the server handles each click on its own, so two searches could happen at once
+    // splay trees change shape when you search, so two at once could break the tree
+    std::mutex treeLock;
 
     // send the b+ tree
     server.Get("/backend/bplus", [&bplusJson](const httplib::Request &, httplib::Response &response) {
@@ -45,6 +47,7 @@ int runWebServer(const FileNode *root, BPlusTree &bplus, NaryTree &nary) {
     // search the b+ tree for a file
     server.Get("/backend/bplus_accesses", [&bplus, &treeLock](const httplib::Request &request, httplib::Response &response) {
         std::string path = request.get_param_value("path");
+        // lock the tree until this search is done
         std::lock_guard<std::mutex> guard(treeLock);
         response.set_content(std::to_string(bplusLookup(bplus, path)), "application/json");
     });
@@ -57,8 +60,15 @@ int runWebServer(const FileNode *root, BPlusTree &bplus, NaryTree &nary) {
     // search the splay tree for a file
     server.Get("/backend/splay_accesses", [&nary, &treeLock](const httplib::Request &request, httplib::Response &response) {
         std::string path = request.get_param_value("path");
+        // lock the tree until this search is done
         std::lock_guard<std::mutex> guard(treeLock);
         response.set_content(std::to_string(splayLookup(nary, path)), "application/json");
+    });
+
+        // send how long each tree took to build
+    server.Get("/backend/build_times", [bplusMs, splayMs](const httplib::Request &, httplib::Response &response) {
+        std::string json = "{\"bplus\": " + std::to_string(bplusMs) + ", \"splay\": " + std::to_string(splayMs) + "}";
+        response.set_content(json, "application/json");
     });
 
     if (!server.bind_to_port("127.0.0.1", 8000)) {

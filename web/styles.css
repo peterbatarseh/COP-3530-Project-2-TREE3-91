@@ -1,6 +1,4 @@
-/* ============================================================
-   TREE(3) File System Explorer
-   ============================================================ */
+/*File System Explorer*/
 
 :root {
   --bg: #03050b;
@@ -9,13 +7,13 @@
   --ink-faint: #4a5672;
   --glass: rgba(10, 16, 32, 0.62);
   --glass-line: rgba(140, 170, 255, 0.16);
-  --leaf: #8dff9e;           /* folders, the living part of the tree */
+  --leaf: #8dff9e;           /* folders */
   --file: #ffd27a;           /* files */
-  --bplus: #4fd8ff;          /* B+ tree accent */
-  --splay: #ff6fd8;          /* splay tree accent */
+  --bplus: #4fd8ff;          /* b+ tree color */
+  --splay: #ff6fd8;          /* splay tree color */
   --accent: var(--bplus);
-  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --display: "Inter", "Segoe UI", system-ui, sans-serif;
+  --mono: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
 body.mode-splay { --accent: var(--splay); }
@@ -44,7 +42,7 @@ button {
   cursor: pointer;
 }
 
-/* ---------- Layers ---------- */
+/*Layers*/
 
 #gl {
   position: fixed;
@@ -64,15 +62,6 @@ button {
   background: radial-gradient(ellipse at 50% 40%, transparent 45%, rgba(0, 0, 0, 0.75) 100%);
 }
 
-#flash {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: #fff;
-  opacity: 0;
-  z-index: 50;
-}
-
 .screen {
   position: fixed;
   inset: 0;
@@ -88,9 +77,7 @@ button {
   transition: opacity 0.9s ease, visibility 0s;
 }
 
-/* ============================================================
-   SCENE 1 — HOME
-   ============================================================ */
+/*Home Screen*/
 
 #home {
   display: flex;
@@ -237,37 +224,30 @@ button {
   50% { opacity: 0.35; }
 }
 
-/* ============================================================
-   SCENE 2 — CINEMATIC HUD
-   ============================================================ */
-
-#cinematic { pointer-events: none; }
-#cinematic.visible { pointer-events: auto; }
-
-.hud {
-  position: absolute;
-  left: 6vw;
-  bottom: 12vh;
-  max-width: 620px;
+/* black screen with the build times */
+#loading {
+  display: grid;
+  place-items: center;
+  background: #000;
+  z-index: 20;
 }
 
-.hud-line {
+.build-times {
+  text-align: center;
+}
+
+.build-label {
   font-size: 0.85rem;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--accent);
-  min-height: 1.4em;
-  text-shadow: 0 0 12px rgba(0, 0, 0, 0.9);
+  color: var(--ink-dim);
 }
 
-.hud-big {
+.build-time {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(1.4rem, 3.4vw, 2.6rem);
-  letter-spacing: -0.01em;
-  text-transform: none;
-  color: var(--ink);
-  margin: 0.4rem 0;
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  margin: 0.2em 0 0.9em;
 }
 
 .ghost-btn {
@@ -285,15 +265,8 @@ button {
   background: rgba(255, 255, 255, 0.08);
 }
 
-#btn-skip {
-  position: absolute;
-  right: 28px;
-  bottom: 28px;
-}
 
-/* ============================================================
-   SCENE 3 — EXPLORER
-   ============================================================ */
+/*Explorer*/
 
 #explorer {
   display: grid;
@@ -473,7 +446,7 @@ button {
   color: var(--ink-faint);
 }
 
-/* ---------- Tree canvas ---------- */
+/*Tree*/
 
 .file-display {
   position: relative;
@@ -582,7 +555,7 @@ button {
   pointer-events: none;
 }
 
-/* ---------- Tooltip + toast ---------- */
+/* box for info when hovering over node*/
 
 #tooltip {
   position: fixed;
@@ -602,6 +575,8 @@ button {
 
 #tooltip.show { opacity: 1; }
 #tooltip b { color: var(--accent); font-weight: 600; }
+
+/*message at bottom after you search file*/
 
 #toast {
   position: fixed;
@@ -625,7 +600,7 @@ button {
   transform: translate(-50%, 0);
 }
 
-/* ---------- Small screens ---------- */
+/*Small screens*/
 
 @media (max-width: 820px) {
   #explorer {
