@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+  <!-- AI use (per course GenAI policy) Tool: Claude (Anthropic), model: Claude Opus 5.5 I used Claude to learn how to build this page.
+    It showed me example code for a page with multiple screens, a 3D canvas in the background, and buttons that call JavaScript functions. 
+    I studied the example, then wrote this file myself and used AI for understanding how to have the 3d earth background. 
+    Prompts: - "i need help learning how to implement a spinning 3d background in a  a webpage"  -->
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TREE(3) File System Explorer</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@400;700;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="mode-bplus">
 
-  <!-- Draws Earth and Tree -->
+  <!-- Draws Earth -->
   <canvas id="gl"></canvas>
   <div id="vignette"></div>
-  <div id="flash"></div>
 
   <!-- Home Page -->
   <section id="home" class="screen visible">
@@ -35,7 +40,7 @@
         </svg>
         <span class="choice-label">B+ Tree</span>
         <span class="choice-desc">Folders in the branches. Files live in linked leaves.</span>
-        <span class="choice-go">Enter ;</span>
+        <span class="choice-go">Enter </span>
       </button>
 
       <button id="btn-splay" class="choice choice-splay" onclick="selectImplementation('Splay Tree')">
@@ -50,24 +55,24 @@
         </svg>
         <span class="choice-label">Splay Tree</span>
         <span class="choice-desc">A tree of splay trees. What you open rises to the top.</span>
-        <span class="choice-go">Enter ;</span>
+        <span class="choice-go">Enter </span>
       </button>
     </div>
 
     <p class="hint">Click an implementation to begin</p>
   </section>
 
-  <!-- Intro animation -->
-  <section id="cinematic" class="screen">
-    <div class="hud">
-      <p id="hud-line-1" class="hud-line"></p>
-      <p id="hud-line-2" class="hud-line hud-big"></p>
-      <p id="hud-line-3" class="hud-line"></p>
+<!-- build times screen -->
+  <section id="loading" class="screen">
+    <div class="build-times">
+      <p class="build-label">B+ tree built in</p>
+      <p class="build-time"><span id="bplus-time">-</span> ms</p>
+      <p class="build-label">Splay tree built in</p>
+      <p class="build-time"><span id="splay-time">-</span> ms</p>
     </div>
-    <button id="btn-skip" class="ghost-btn">Skip intro ;</button>
   </section>
 
-  <!-- File exploerer -->
+  <!-- File explorer -->
   <section id="explorer" class="screen">
     <header class="topbar">
       <button class="brand" onclick="goHome()" title="Back to the globe">TREE<span>(3)</span></button>

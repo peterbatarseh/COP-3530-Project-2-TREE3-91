@@ -1,5 +1,8 @@
-//Generates the dataset, loads it into both trees and starts the web server
+/*
+Generates the dataset, loads it into both trees and starts the web server
+*/
 
+#include <chrono>
 #include <iostream>
 
 #include "BPlusTree.h"
@@ -11,18 +14,24 @@
 
 int main() {
     std::cout << "Generating dataset..." << std::endl;
-    FileNode *root = generateTree(); 
+    FileNode *root = generateTree();
 
-    //load the same data into both trees
     std::cout << "Loading into B+ tree and splay tree..." << std::endl;
     BPlusTree bplus("root");
     NaryTree nary("root");
+
+    // time how long each tree takes to build
+    auto start = std::chrono::steady_clock::now();
     loadIntoBPlus(root, bplus);
+    long long bplusMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+
+    start = std::chrono::steady_clock::now();
     loadIntoNary(root, nary);
+    long long splayMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
 
-    int result = runWebServer(root, bplus, nary);  //pass the trees to the server
+    int result = runWebServer(root, bplus, nary, bplusMs, splayMs);
 
-
+    // clean up
     delete root;
     return result;
 }
